@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>利益判定カード | ブックオフせどりチェッカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE4D2;
+    --paper-deep:#E3D7BE;
+    --card:#FAF5E9;
+    --ink:#2A2117;
+    --ink-soft:#5C5142;
+    --line:#CBBB98;
+    --stamp-red:#A03A2E;
+    --gold:#B8862F;
+    --safe:#3B6650;
+    --safe-bg:#E4EEE7;
+    --danger:#A03A2E;
+    --danger-bg:#F5E1DD;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, #F5EEDD 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    padding-bottom:60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header{ padding:28px 20px 18px; border-bottom:2px solid var(--line); position:relative; }
+  header::after{
+    content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+  }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.18em; color:var(--stamp-red); font-weight:700; }
+  h1{ font-family:'Shippori Mincho', serif; font-size:24px; margin:6px 0 4px; line-height:1.35; }
+  .sub{ font-size:13px; color:var(--ink-soft); line-height:1.6; }
+
+  main{ padding:20px 20px 20px; max-width:480px; margin:0 auto; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:0 2px 6px rgba(42,33,23,.06);
+  }
+  .field{ margin-bottom:18px; }
+  .field:last-child{ margin-bottom:0; }
+  label.field-label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:var(--ink-soft);
+    letter-spacing:.03em;
+    margin-bottom:8px;
+  }
+  label.field-label .unit{ font-weight:500; font-size:11px; opacity:.75; margin-left:4px; }
+
+  .yen-input{
+    position:relative;
+  }
+  .yen-input::before{
+    content:"¥";
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-family:'JetBrains Mono', monospace; font-weight:700; font-size:16px;
+  }
+  input[type="number"]{
+    width:100%;
+    font-family:'JetBrains Mono', monospace;
+    font-size:18px;
+    font-weight:700;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 12px 12px 32px;
+    outline:none;
+  }
+  input[type="number"]:focus{ border-color:var(--gold); }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{ opacity:.6; }
+
+  .radio-group{ display:flex; flex-direction:column; gap:8px; }
+  .radio-option{
+    display:flex; align-items:center; justify-content:space-between;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:6px;
+    padding:10px 14px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .radio-option:has(input:checked){
+    border-color:var(--gold);
+    background:#F6EBD2;
+  }
+  .radio-option .opt-name{
+    display:flex; align-items:center; gap:10px;
+    font-size:14px; font-weight:700;
+  }
+  .radio-option input[type="radio"]{
+    accent-color:var(--stamp-red);
+    width:16px; height:16px;
+  }
+  .radio-option .opt-price{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:700;
+  }
+
+  .fee-note{
+    margin-top:16px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+
+  .result{
+    border-radius:10px;
+    padding:22px 20px;
+    text-align:center;
+    border:2px solid var(--line);
+    background:var(--card);
+    transition:background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .result.is-safe{ background:var(--safe-bg); border-color:var(--safe); }
+  .result.is-danger{ background:var(--danger-bg); border-color:var(--danger); }
+
+  .result-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:.14em; font-weight:700;
+    color:var(--ink-soft); margin-bottom:6px;
+  }
+  .result-margin{
+    font-family:'Shippori Mincho', serif;
+    font-size:44px; font-weight:700; line-height:1;
+    color:var(--ink);
+  }
+  .result.is-safe .result-margin{ color:var(--safe); }
+  .result.is-danger .result-margin{ color:var(--danger); }
+  .result-verdict{
+    margin-top:8px;
+    font-size:14px; font-weight:700;
+    color:var(--ink-soft);
+  }
+  .result.is-safe .result-verdict{ color:var(--safe); }
+  .result.is-danger .result-verdict{ color:var(--danger); }
+
+  .breakdown{
+    margin-top:16px;
+    border-top:1px dashed var(--line);
+    padding-top:14px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    row-gap:8px;
+    font-size:13px;
+  }
+  .breakdown .k{ color:var(--ink-soft); text-align:left; }
+  .breakdown .v{ font-family:'JetBrains Mono', monospace; font-weight:700; text-align:right; }
+  .breakdown .v.minus{ color:var(--stamp-red); }
+  .breakdown .divider{ grid-column:1 / -1; border-top:1px solid var(--line); margin:2px 0; }
+  .breakdown .total .k, .breakdown .total .v{ font-weight:900; font-size:14px; }
+
+  footer{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    letter-spacing:.08em;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">BOOKOFF SEDORI</div>
+  <h1>利益判定カード</h1>
+  <div class="sub">ブックオフ仕入れ → メルカリ販売の利益率を即チェック。<br>30%未満は赤字表示で仕入れ判断をサポートします。</div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="cost">ブックオフ売価<span class="unit">（仕入れ値）</span></label>
+      <div class="yen-input">
+        <input type="number" id="cost" inputmode="numeric" min="0" placeholder="0" value="330">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="sell">メルカリ売値</label>
+      <div class="yen-input">
+        <input type="number" id="sell" inputmode="numeric" min="0" placeholder="0" value="1200">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">送料<span class="unit">（発送方法を選択）</span></label>
+      <div class="radio-group" id="shipping">
+        <label class="radio-option">
+          <span class="opt-name"><input type="radio" name="ship" value="210" checked>ネコポス</span>
+          <span class="opt-price">¥210</span>
+        </label>
+        <label class="radio-option">
+          <span class="opt-name"><input type="radio" name="ship" value="215">ゆうパケットポスト</span>
+          <span class="opt-price">¥215</span>
+        </label>
+        <label class="radio-option">
+          <span class="opt-name"><input type="radio" name="ship" value="370">レターパックライト</span>
+          <span class="opt-price">¥370</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="fee-note">※ メルカリ販売手数料（10%）を含めて計算しています</div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="result-label">PROFIT MARGIN</div>
+    <div class="result-margin" id="marginValue">--%</div>
+    <div class="result-verdict" id="verdictText">数値を入力してください</div>
+
+    <div class="breakdown">
+      <div class="k">メルカリ売値</div><div class="v" id="bSell">¥0</div>
+      <div class="k">− 販売手数料</div><div class="v minus" id="bFee">−¥0</div>
+      <div class="k">− 送料</div><div class="v minus" id="bShip">−¥0</div>
+      <div class="k">− ブックオフ仕入れ値</div><div class="v minus" id="bCost">−¥0</div>
+      <div class="divider"></div>
+      <div class="k total">利益</div><div class="v total" id="bProfit">¥0</div>
+    </div>
+  </div>
+
+  <footer>THRESHOLD: MARGIN &lt; 30% = DANGER</footer>
+</main>
+
+<script>
+  const costEl = document.getElementById('cost');
+  const sellEl = document.getElementById('sell');
+  const resultEl = document.getElementById('result');
+  const marginValueEl = document.getElementById('marginValue');
+  const verdictTextEl = document.getElementById('verdictText');
+
+  const bSell = document.getElementById('bSell');
+  const bFee = document.getElementById('bFee');
+  const bShip = document.getElementById('bShip');
+  const bCost = document.getElementById('bCost');
+  const bProfit = document.getElementById('bProfit');
+
+  const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+
+  function getShipping(){
+    const checked = document.querySelector('input[name="ship"]:checked');
+    return checked ? Number(checked.value) : 0;
+  }
+  const FEE_RATE = 0.1;
+
+  function calculate(){
+    const cost = Number(costEl.value) || 0;
+    const sell = Number(sellEl.value) || 0;
+    const shipping = getShipping();
+
+    const fee = sell * FEE_RATE;
+    const profit = sell - fee - shipping - cost;
+    const margin = sell > 0 ? (profit / sell) * 100 : 0;
+
+    bSell.textContent = yen(sell);
+    bFee.textContent = '−' + yen(fee);
+    bShip.textContent = '−' + yen(shipping);
+    bCost.textContent = '−' + yen(cost);
+    bProfit.textContent = (profit < 0 ? '−' : '') + yen(Math.abs(profit));
+
+    if (sell <= 0){
+      resultEl.classList.remove('is-safe', 'is-danger');
+      marginValueEl.textContent = '--%';
+      verdictTextEl.textContent = '数値を入力してください';
+      return;
+    }
+
+    marginValueEl.textContent = margin.toFixed(1) + '%';
+
+    const isDanger = margin < 30;
+    resultEl.classList.toggle('is-safe', !isDanger);
+    resultEl.classList.toggle('is-danger', isDanger);
+
+    if (profit < 0){
+      verdictTextEl.textContent = '赤字です。仕入れを見送りましょう';
+    } else if (isDanger){
+      verdictTextEl.textContent = '利益率30%未満。仕入れ注意';
+    } else {
+      verdictTextEl.textContent = '利益率30%以上。仕入れOK';
+    }
+  }
+
+  document.addEventListener('input', calculate);
+  document.addEventListener('change', calculate);
+  calculate();
+</script>
+</body>
+</html>
