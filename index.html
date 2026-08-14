@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>棚さがしカード | せどり狩りリスト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE4D2;
+    --paper-deep:#E3D7BE;
+    --card:#FAF5E9;
+    --ink:#2A2117;
+    --ink-soft:#5C5142;
+    --line:#CBBB98;
+    --stamp-red:#A03A2E;
+    --gold:#B8862F;
+    --sec-jinbun:#3E5A66;
+    --sec-jikokeihatsu:#B8862F;
+    --sec-jidou:#3B6650;
+    --sec-bunko:#7A3B45;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, #F5EEDD 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    padding-bottom:60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header{ padding:28px 20px 18px; border-bottom:2px solid var(--line); position:relative; }
+  header::after{
+    content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+  }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.18em; color:var(--stamp-red); font-weight:700; }
+  h1{ font-family:'Shippori Mincho', serif; font-size:26px; margin:6px 0 4px; line-height:1.35; }
+  .sub{ font-size:13px; color:var(--ink-soft); line-height:1.6; }
+  .progress-wrap{ margin:16px 20px 0; display:flex; align-items:center; gap:12px; }
+  .progress-track{ flex:1; height:8px; border-radius:5px; background:var(--paper-deep); overflow:hidden; border:1px solid var(--line); }
+  .progress-fill{ height:100%; background:var(--stamp-red); width:0%; transition:width .35s ease; }
+  .progress-label{ font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700; white-space:nowrap; }
+  .reset-btn{
+    margin:14px 20px 0; font-family:'JetBrains Mono', monospace; font-size:11px;
+    background:none; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    padding:6px 10px; border-radius:4px; letter-spacing:.05em;
+  }
+  main{ padding:8px 20px 20px; }
+  .section{ margin-top:30px; }
+  .section-tab{
+    display:inline-flex; align-items:baseline; gap:8px; padding:5px 12px;
+    border-radius:3px 3px 0 0; color:#fff; font-size:13px; font-weight:700; letter-spacing:.04em;
+  }
+  .section-tab small{ font-weight:500; opacity:.85; font-size:11px;}
+  .sec-jinbun .section-tab{ background:var(--sec-jinbun); }
+  .sec-jikokeihatsu .section-tab{ background:var(--sec-jikokeihatsu); }
+  .sec-jidou .section-tab{ background:var(--sec-jidou); }
+  .sec-bunko .section-tab{ background:var(--sec-bunko); }
+  .section-note{ font-size:12px; color:var(--ink-soft); margin:6px 2px 10px; line-height:1.5; }
+
+  .card{
+    position:relative; display:flex; gap:12px; background:var(--card);
+    border:1px solid var(--line); border-left-width:4px; border-radius:2px;
+    padding:14px 14px 14px 12px; margin-bottom:10px;
+    box-shadow:1px 2px 0 rgba(42,33,23,.05); transition:opacity .2s ease;
+  }
+  .sec-jinbun .card{ border-left-color:var(--sec-jinbun); }
+  .sec-jikokeihatsu .card{ border-left-color:var(--sec-jikokeihatsu); }
+  .sec-jidou .card{ border-left-color:var(--sec-jidou); }
+  .sec-bunko .card{ border-left-color:var(--sec-bunko); }
+  .card.got{ opacity:.45; }
+
+  /* --- 背表紙イラスト --- */
+  .spine-row{ display:flex; gap:4px; align-items:flex-end; flex-shrink:0; }
+  .spine{
+    position:relative;
+    width:30px; height:104px;
+    border-radius:2px;
+    box-shadow:1px 1px 3px rgba(0,0,0,.28), inset -2px 0 0 rgba(0,0,0,.10), inset 2px 0 0 rgba(255,255,255,.12);
+    display:flex; align-items:flex-start; justify-content:center;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .spine.small{ width:16px; height:76px; }
+  .spine-title{
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:1.5px;
+    padding-top:9px;
+    line-height:1.3;
+  }
+  .spine.small .spine-title{ font-size:8px; letter-spacing:1px; padding-top:6px; }
+  .spine-band{ position:absolute; left:0; right:0; bottom:0; }
+  .spine-footer{
+    position:absolute; left:0; right:0; bottom:2px; text-align:center;
+    font-family:'Zen Kaku Gothic New', sans-serif; font-size:5.5px; letter-spacing:.5px;
+    writing-mode: vertical-rl;
+    right:2px; left:auto; bottom:6px; top:auto;
+    opacity:.75;
+  }
+  .spine-frame{ position:absolute; inset:5px; border:1px solid; opacity:.55; pointer-events:none; }
+  .spine-icon{ position:absolute; top:6px; left:50%; transform:translateX(-50%); opacity:.9; }
+
+  .card-body{ flex:1; min-width:0; }
+  .title-row{ display:flex; justify-content:space-between; gap:8px; align-items:flex-start;}
+  .title{ font-family:'Shippori Mincho', serif; font-weight:700; font-size:16px; line-height:1.4; }
+  .lucky-badge{
+    font-family:'JetBrains Mono', monospace; font-size:9px; color:var(--stamp-red);
+    border:1px solid var(--stamp-red); border-radius:3px; padding:1px 5px;
+    white-space:nowrap; margin-top:2px;
+  }
+  .meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .desc{ font-size:12.5px; color:var(--ink); margin-top:7px; line-height:1.55; }
+  .price-row{ display:flex; justify-content:space-between; align-items:center; margin-top:9px; }
+  .price{ font-family:'JetBrains Mono', monospace; font-size:12.5px; font-weight:700; color:var(--gold); }
+
+  .stamp-btn{
+    font-family:'Shippori Mincho', serif; font-weight:700; font-size:12px;
+    border:2px solid var(--stamp-red); color:var(--stamp-red); background:transparent;
+    border-radius:50%; width:52px; height:52px; transform:rotate(-8deg);
+    flex-shrink:0; letter-spacing:.05em; align-self:center;
+  }
+  .stamp-btn.on{ background:var(--stamp-red); color:#fff; box-shadow:0 0 0 3px rgba(160,58,46,.15); }
+
+  footer{ text-align:center; font-size:11px; color:var(--ink-soft); padding:20px; }
+  .disclaimer{
+    margin:24px 20px 0; padding:10px 12px; border:1px dashed var(--line);
+    font-size:11px; color:var(--ink-soft); line-height:1.6; border-radius:4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">FIELD CARD / せどり狩りリスト</div>
+  <h1>今日の狩り場<br>— BOOKOFF棚さがし —</h1>
+  <div class="sub">棚の色タグ通りに巡回。背表紙のイラストは色・配置の特徴を再現した目印です。見つけたらスタンプをタップ。</div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+  <div class="progress-label" id="label">0 / 0</div>
+</div>
+<button class="reset-btn" id="resetBtn">リセット（次の店舗へ）</button>
+
+<main id="main"></main>
+
+<div class="disclaimer">※ 背表紙イラストは実物の写真ではなく、色や文字配置などの特徴を元にした再現イメージです。実際のデザインとは細部が異なる場合があります。</div>
+
+<footer>棚の位置は店舗ごとに異なります。まずジャンル表示の看板色を確認してください。</footer>
+
+<script>
+const SECTIONS = [
+  { id:"jinbun", cls:"sec-jinbun", label:"人文・思想書", hint:"単行本、心理学/哲学寄りの棚。ビジネス書と隣接することも。" },
+  { id:"jikokeihatsu", cls:"sec-jikokeihatsu", label:"自己啓発・ビジネス書", hint:"単行本コーナー。ハードカバーが多い。" },
+  { id:"jidou", cls:"sec-jidou", label:"児童書", hint:"絵本より少し文字が多い、児童文庫・単行本の棚。" },
+  { id:"bunko", cls:"sec-bunko", label:"文庫コーナー", hint:"出版社・著者名の五十音順。徳間文庫は「た」行、岩波少年文庫は「岩波」枠。" },
+];
+
+// 各本の背表紙イメージ定義（色・文字・帯などの特徴を再現）
+const BOOKS = [
+  { id:"yorutokiri", section:"jinbun",
+    title:"夜と霧 新版",
+    meta:"ヴィクトール・E・フランクル／池田香代子 訳・みすず書房",
+    desc:"白地に黒文字のシンプルな装丁。表紙下部に太いオレンジの帯。みすず書房らしい硬派な作り。",
+    price:"参考：￥1,000前後で流通",
+    lucky:false,
+    spine:{ bg:"#F8F3E4", text:"#2A2117", label:"夜と霧", band:{color:"#D9782D", h:32}, footer:"みすず書房" } },
+
+  { id:"kirawareru", section:"jikokeihatsu",
+    title:"嫌われる勇気",
+    meta:"岸見一郎・古賀史健・ダイヤモンド社",
+    desc:"表紙は鮮やかな青一色。同シリーズの赤（幸せになる勇気）と対で並ぶことが多い。",
+    price:"参考：2冊セットで￥1,999",
+    lucky:false,
+    spine:{ bg:"#2E5C8A", text:"#FFFFFF", label:"嫌われる勇気", footer:"ダイヤモンド社" } },
+
+  { id:"shiawaseninaru", section:"jikokeihatsu",
+    title:"幸せになる勇気",
+    meta:"岸見一郎・古賀史健・ダイヤモンド社",
+    desc:"「嫌われる勇気」の続編。表紙は赤一色。青い前作の隣を探すと見つけやすい。",
+    price:"参考：2冊セットで￥1,999",
+    lucky:false,
+    spine:{ bg:"#B23A2E", text:"#FFFFFF", label:"幸せになる勇気", footer:"ダイヤモンド社" } },
+
+  { id:"7habits", section:"jikokeihatsu",
+    title:"完訳 7つの習慣 人格主義の回復",
+    meta:"スティーブン・R・コヴィー・キングベアー出版",
+    desc:"表紙いっぱいにスーツ姿の男性の顔写真。白地に金文字のタイトル。分厚めのハードカバー。",
+    price:"参考：￥850前後",
+    lucky:false,
+    spine:{ bg:"#F2EFE9", text:"#2A2117", label:"7つの習慣", footer:"キングベアー出版", icon:"bust", accent:"#B8860B" } },
+
+  { id:"momo", section:"jidou",
+    title:"モモ",
+    meta:"ミヒャエル・エンデ・岩波少年文庫",
+    desc:"からし色〜黄土色の表紙に、白黒の洋館挿絵。岩波少年文庫の統一デザイン。",
+    price:"参考：「はてしない物語」上下と3冊セットで￥1,499",
+    lucky:false,
+    spine:{ bg:"#D9A62E", text:"#2A2117", label:"モモ", footer:"岩波少年文庫" } },
+
+  { id:"hateshinaiue", section:"jidou",
+    title:"はてしない物語（上）",
+    meta:"ミヒャエル・エンデ・岩波少年文庫",
+    desc:"深緑の表紙に金の唐草模様、ドイツ語原題の飾り文字入り。上下巻セット。",
+    price:"参考：3冊セットで￥1,499",
+    lucky:false,
+    spine:{ bg:"#2F4F3E", text:"#E9CE85", label:"はてしない物語 上", footer:"岩波少年文庫", accent:"#B8862F", frame:true } },
+
+  { id:"hateshinaishita", section:"jidou",
+    title:"はてしない物語（下）",
+    meta:"ミヒャエル・エンデ・岩波少年文庫",
+    desc:"上巻とほぼ同じ深緑・金の唐草デザイン。背表紙で「上」「下」の表記を確認。",
+    price:"参考：3冊セットで￥1,499",
+    lucky:false,
+    spine:{ bg:"#2F4F3E", text:"#E9CE85", label:"はてしない物語 下", footer:"岩波少年文庫", accent:"#B8862F", frame:true } },
+
+  { id:"elmer", section:"jidou",
+    title:"エルマーシリーズ（3冊）",
+    meta:"ルース・スタイルス・ガネット・福音館書店",
+    desc:"りゅうの子と少年のイラスト表紙。巻ごとに背表紙の色が違う。カラフルな児童書棚の定番。",
+    price:"— 追加リクエスト分",
+    lucky:false,
+    spines:[
+      { bg:"#E07B39", text:"#FFFFFF", label:"エルマー" },
+      { bg:"#4FA3C4", text:"#FFFFFF", label:"エルマー" },
+      { bg:"#E3C23C", text:"#2A2117", label:"エルマー" },
+    ] },
+
+  { id:"ami1", section:"bunko",
+    title:"アミ 3度めの約束",
+    meta:"エンリケ・バリオス・徳間文庫",
+    desc:"UFOに乗った子どもたちのパステルイラスト表紙。背表紙下部に赤い帯。",
+    price:"あったらラッキー枠（高値取引あり）",
+    lucky:true,
+    spine:{ bg:"#F5EAD9", text:"#2A2117", label:"アミ", band:{color:"#C94F3E", h:20}, footer:"徳間文庫", icon:"ufo" } },
+
+  { id:"ami2", section:"bunko",
+    title:"もどってきたアミ",
+    meta:"エンリケ・バリオス・徳間文庫",
+    desc:"同シリーズ、背表紙下部が黄色の帯。表紙イラストのトーンは共通。",
+    price:"あったらラッキー枠（高値取引あり）",
+    lucky:true,
+    spine:{ bg:"#F5EAD9", text:"#2A2117", label:"もどってきたアミ", band:{color:"#E0B23C", h:20}, footer:"徳間文庫", icon:"ufo" } },
+
+  { id:"ami3", section:"bunko",
+    title:"アミ 小さな宇宙人",
+    meta:"エンリケ・バリオス・徳間文庫",
+    desc:"同シリーズ、背表紙下部が緑の帯。3冊まとまって並んでいることが多い。",
+    price:"あったらラッキー枠（高値取引あり）",
+    lucky:true,
+    spine:{ bg:"#F5EAD9", text:"#2A2117", label:"アミ 小さな宇宙人", band:{color:"#4F8F5B", h:20}, footer:"徳間文庫", icon:"ufo" } },
+];
+
+const STORAGE_KEY = "bookoff-checklist:checked";
+
+async function loadChecked(){
+  try{ const res = await window.storage.get(STORAGE_KEY, false); return res ? JSON.parse(res.value) : {}; }
+  catch(e){ return {}; }
+}
+async function saveChecked(state){
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+  catch(e){ console.error("save failed", e); }
+}
+
+let checked = {};
+
+const ICONS = {
+  bust: `<svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="7" r="5" fill="#2A2117" opacity=".55"/><path d="M2 23c0-6 4.5-10 10-10s10 4 10 10" fill="#2A2117" opacity=".55"/></svg>`,
+  ufo: `<svg width="16" height="10" viewBox="0 0 32 20"><ellipse cx="16" cy="12" rx="15" ry="5" fill="#8892A0"/><ellipse cx="16" cy="7" rx="7" ry="6" fill="#B9C4CF"/><ellipse cx="16" cy="12" rx="15" ry="5" fill="none" stroke="#5C6672" stroke-width="1"/></svg>`,
+};
+
+function spineHTML(spec, small){
+  const bandHTML = spec.band ? `<div class="spine-band" style="height:${spec.band.h}%; background:${spec.band.color};"></div>` : '';
+  const frameHTML = spec.frame ? `<div class="spine-frame" style="border-color:${spec.accent || '#B8862F'};"></div>` : '';
+  const iconHTML = spec.icon ? `<div class="spine-icon">${ICONS[spec.icon] || ''}</div>` : '';
+  const footerHTML = spec.footer ? `<div class="spine-footer" style="color:${spec.text};">${spec.footer}</div>` : '';
+  return `
+    <div class="spine${small ? ' small':''}" style="background:${spec.bg};">
+      ${frameHTML}
+      ${iconHTML}
+      <div class="spine-title" style="color:${spec.text}; margin-top:${spec.icon ? '14px':'0'};">${spec.label}</div>
+      ${bandHTML}
+      ${footerHTML}
+    </div>
+  `;
+}
+
+function render(){
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  SECTIONS.forEach(sec=>{
+    const items = BOOKS.filter(b=>b.section===sec.id);
+    const wrap = document.createElement('div');
+    wrap.className = `section ${sec.cls}`;
+    wrap.innerHTML = `
+      <div class="section-tab">${sec.label} <small>${items.filter(b=>checked[b.id]).length}/${items.length}</small></div>
+      <div class="section-note">${sec.hint}</div>
+    `;
+    items.forEach(b=>{
+      const isOn = !!checked[b.id];
+      const card = document.createElement('div');
+      card.className = 'card' + (isOn ? ' got' : '');
+      const spinesHTML = b.spines
+        ? `<div class="spine-row">${b.spines.map(s=>spineHTML(s, true)).join('')}</div>`
+        : `<div class="spine-row">${spineHTML(b.spine, false)}</div>`;
+      card.innerHTML = `
+        ${spinesHTML}
+        <div class="card-body">
+          <div class="title-row">
+            <div class="title">${b.title}</div>
+            ${b.lucky ? '<div class="lucky-badge">あったら<br>ラッキー</div>' : ''}
+          </div>
+          <div class="meta">${b.meta}</div>
+          <div class="desc">${b.desc}</div>
+          <div class="price-row">
+            <div class="price">${b.price}</div>
+          </div>
+        </div>
+        <button class="stamp-btn ${isOn?'on':''}" data-id="${b.id}">${isOn?'GET':'未'}</button>
+      `;
+      wrap.appendChild(card);
+    });
+    main.appendChild(wrap);
+  });
+
+  document.querySelectorAll('.stamp-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.id;
+      checked[id] = !checked[id];
+      await saveChecked(checked);
+      render();
+      updateProgress();
+    });
+  });
+}
+
+function updateProgress(){
+  const total = BOOKS.length;
+  const done = BOOKS.filter(b=>checked[b.id]).length;
+  document.getElementById('fill').style.width = (done/total*100) + '%';
+  document.getElementById('label').textContent = `${done} / ${total}`;
+}
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(confirm('チェック状態をすべてリセットしますか？')){
+    checked = {};
+    await saveChecked(checked);
+    render();
+    updateProgress();
+  }
+});
+
+(async function init(){
+  checked = await loadChecked();
+  render();
+  updateProgress();
+})();
+</script>
+</body>
+</html>
