@@ -181,6 +181,7 @@
     </div>
 
     <button class="search-btn" id="searchBtn" disabled>メルカリで検索する</button>
+    <div id="mobileHint" style="display:none; font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.6;">タップでURLをコピーしました。ブラウザのアドレス欄に貼り付けて開いてください（そのまま開くとメルカリアプリが「販売中」条件で開いてしまいます）。</div>
 
     <div class="field" style="margin-top:16px;">
       <label class="field-label" for="urlPreview">生成されたURL<small style="font-weight:500;">（スマホでアプリに飛んでしまう場合は、これをコピーしてブラウザのアドレス欄に直接ペーストしてください）</small></label>
@@ -213,8 +214,26 @@
   const urlPreview = document.getElementById('urlPreview');
   const copyBtn = document.getElementById('copyBtn');
   const copyMsg = document.getElementById('copyMsg');
+  const mobileHint = document.getElementById('mobileHint');
   const STORAGE_KEY = 'mercari-sold-search:history';
   const MAX_HISTORY = 8;
+
+  // モバイルではリンクタップ時にOSがメルカリアプリへ横取りし、
+  // アプリ側がURLのstatusパラメータを無視して「販売中」で開くため、
+  // タップではなくコピー操作に寄せる。
+  const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (IS_MOBILE){
+    searchBtn.textContent = 'URLをコピーする';
+  }
+
+  async function copyToClipboard(text){
+    try{
+      await navigator.clipboard.writeText(text);
+    }catch(e){
+      urlPreview.select();
+      document.execCommand('copy');
+    }
+  }
 
   function buildUrl(keyword){
     const params = new URLSearchParams({
@@ -281,18 +300,19 @@
   searchBtn.addEventListener('click', async ()=>{
     const keyword = keywordEl.value.trim();
     if (!keyword) return;
-    window.open(buildUrl(keyword), '_blank', 'noopener');
+    const url = buildUrl(keyword);
+    if (IS_MOBILE){
+      await copyToClipboard(url);
+      mobileHint.style.display = 'block';
+    } else {
+      window.open(url, '_blank', 'noopener');
+    }
     await addHistory(keyword);
   });
 
   copyBtn.addEventListener('click', async ()=>{
     if (!urlPreview.value) return;
-    try{
-      await navigator.clipboard.writeText(urlPreview.value);
-    }catch(e){
-      urlPreview.select();
-      document.execCommand('copy');
-    }
+    await copyToClipboard(urlPreview.value);
     copyMsg.style.display = 'block';
     setTimeout(()=>{ copyMsg.style.display = 'none'; }, 1500);
   });
