@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>相場さぐりカード | メルカリ売却履歴チェッカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE4D2;
+    --paper-deep:#E3D7BE;
+    --card:#FAF5E9;
+    --ink:#2A2117;
+    --ink-soft:#5C5142;
+    --line:#CBBB98;
+    --stamp-red:#A03A2E;
+    --gold:#B8862F;
+    --safe:#3B6650;
+    --safe-bg:#E4EEE7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, #F5EEDD 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    padding-bottom:60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header{ padding:28px 20px 18px; border-bottom:2px solid var(--line); position:relative; }
+  header::after{
+    content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+  }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.18em; color:var(--stamp-red); font-weight:700; }
+  h1{ font-family:'Shippori Mincho', serif; font-size:24px; margin:6px 0 4px; line-height:1.35; }
+  .sub{ font-size:13px; color:var(--ink-soft); line-height:1.6; }
+
+  main{ padding:20px 20px 20px; max-width:480px; margin:0 auto; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:0 2px 6px rgba(42,33,23,.06);
+  }
+  .field{ margin-bottom:18px; }
+  .field:last-child{ margin-bottom:0; }
+  label.field-label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:var(--ink-soft);
+    letter-spacing:.03em;
+    margin-bottom:8px;
+  }
+
+  input[type="text"]{
+    width:100%;
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-size:16px;
+    font-weight:700;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 14px;
+    outline:none;
+  }
+  input[type="text"]:focus{ border-color:var(--gold); }
+
+  .condition-list{ display:flex; flex-direction:column; gap:8px; }
+  .condition-item{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:6px;
+    padding:10px 14px;
+  }
+  .condition-item .stamp{
+    font-family:'Shippori Mincho', serif; font-weight:700; font-size:11px;
+    border:2px solid var(--stamp-red); color:var(--stamp-red);
+    border-radius:50%; width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    transform:rotate(-6deg); letter-spacing:.02em;
+  }
+  .condition-item .text{ font-size:13.5px; font-weight:700; }
+  .condition-item .text small{ display:block; font-weight:500; font-size:11px; color:var(--ink-soft); margin-top:2px; }
+
+  .search-btn{
+    width:100%;
+    font-family:'Shippori Mincho', serif;
+    font-size:17px; font-weight:700;
+    color:#fff;
+    background:var(--stamp-red);
+    border:none;
+    border-radius:8px;
+    padding:16px;
+    margin-top:18px;
+    cursor:pointer;
+    letter-spacing:.05em;
+    box-shadow:0 3px 0 #7A2A20;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .search-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #7A2A20; }
+  .search-btn:disabled{ background:var(--line); box-shadow:none; cursor:not-allowed; color:var(--ink-soft); }
+
+  .history{ margin-top:0; }
+  .history-title{ font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:10px; letter-spacing:.03em; }
+  .history-list{ display:flex; flex-direction:column; gap:8px; }
+  .history-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border:1px solid var(--line); border-radius:6px; padding:9px 12px;
+    background:var(--paper); font-size:13px; cursor:pointer;
+  }
+  .history-item:hover{ border-color:var(--gold); }
+  .history-item .kw{ font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .history-item .go{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--stamp-red); flex-shrink:0; }
+  .history-empty{ font-size:12px; color:var(--ink-soft); }
+
+  .note{
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    background:var(--card);
+    border:1px dashed var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .note strong{ color:var(--ink); }
+  .note .head{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.1em;
+    color:var(--stamp-red); font-weight:700; margin-bottom:6px;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    letter-spacing:.08em;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">MERCARI SOLD CHECK</div>
+  <h1>相場さぐりカード</h1>
+  <div class="sub">商品名を入れて検索すると、「売り切れ」「個人出品」「新しい順」の条件をつけたメルカリの検索結果を新しいタブで開きます。実際の売値と頻度はメルカリ側の一覧で確認してください。</div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="keyword">商品名</label>
+      <input type="text" id="keyword" placeholder="例）Nintendo Switch 有機ELモデル" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label class="field-label">検索条件（固定）</label>
+      <div class="condition-list">
+        <div class="condition-item">
+          <div class="stamp">済</div>
+          <div class="text">販売状況：売り切れ<small>SOLD OUT のみ表示</small></div>
+        </div>
+        <div class="condition-item">
+          <div class="stamp">個人</div>
+          <div class="text">出品者：個人<small>メルカリShops（法人・ストア出品）を除外</small></div>
+        </div>
+        <div class="condition-item">
+          <div class="stamp">新</div>
+          <div class="text">並び順：新しい順<small>出品日時が新しいものから表示</small></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="search-btn" id="searchBtn" disabled>メルカリで検索する</button>
+  </div>
+
+  <div class="card history">
+    <div class="history-title">最近検索したキーワード</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <div class="note">
+    <div class="head">NOTE</div>
+    このページはメルカリのデータを自動で取得・集計するものではありません。メルカリは検索結果を外部から取得できる公開APIを提供しておらず、ブラウザから直接データを読み込むことはできないため、条件をあらかじめ設定した検索URLを生成してメルカリ本体の検索結果ページを開く仕組みになっています。<br><br>
+    「出品者：個人」の絞り込みは、メルカリ公式に個人／法人を直接指定するフィルタが無いため、法人・ストア出品である「メルカリShops」を除外するパラメータで代用しています。開いた検索結果画面で、念のため出品者欄をご確認ください。
+  </div>
+
+  <footer>KEYWORD IN → SOLD / INDIVIDUAL / NEWEST</footer>
+</main>
+
+<script>
+  const keywordEl = document.getElementById('keyword');
+  const searchBtn = document.getElementById('searchBtn');
+  const historyList = document.getElementById('historyList');
+  const STORAGE_KEY = 'mercari-sold-search:history';
+  const MAX_HISTORY = 8;
+
+  function buildUrl(keyword){
+    const params = new URLSearchParams({
+      keyword: keyword,
+      status: 'sold_out',
+      sort: 'created_time',
+      order: 'desc',
+      item_types: 'mercari'
+    });
+    return 'https://jp.mercari.com/search?' + params.toString();
+  }
+
+  async function loadHistory(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      return res ? JSON.parse(res.value) : [];
+    }catch(e){ return []; }
+  }
+  async function saveHistory(list){
+    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(list), false); }
+    catch(e){ console.error('save failed', e); }
+  }
+
+  let history = [];
+
+  function renderHistory(){
+    historyList.innerHTML = '';
+    if (history.length === 0){
+      historyList.innerHTML = '<div class="history-empty">検索するとここに履歴が残ります</div>';
+      return;
+    }
+    history.forEach(kw=>{
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `<span class="kw"></span><span class="go">開く &gt;</span>`;
+      item.querySelector('.kw').textContent = kw;
+      item.addEventListener('click', ()=>{
+        keywordEl.value = kw;
+        updateButtonState();
+        window.open(buildUrl(kw), '_blank', 'noopener');
+      });
+      historyList.appendChild(item);
+    });
+  }
+
+  async function addHistory(keyword){
+    history = [keyword, ...history.filter(k=>k !== keyword)].slice(0, MAX_HISTORY);
+    await saveHistory(history);
+    renderHistory();
+  }
+
+  function updateButtonState(){
+    searchBtn.disabled = keywordEl.value.trim().length === 0;
+  }
+
+  keywordEl.addEventListener('input', updateButtonState);
+  keywordEl.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter' && !searchBtn.disabled) searchBtn.click();
+  });
+
+  searchBtn.addEventListener('click', async ()=>{
+    const keyword = keywordEl.value.trim();
+    if (!keyword) return;
+    window.open(buildUrl(keyword), '_blank', 'noopener');
+    await addHistory(keyword);
+  });
+
+  (async function init(){
+    history = await loadHistory();
+    renderHistory();
+    updateButtonState();
+  })();
+</script>
+</body>
+</html>
