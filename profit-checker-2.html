@@ -1,319 +1,356 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>利益判定カード | ブックオフせどりチェッカー</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>本せどり 利益計算</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="本せどり">
+<meta name="theme-color" content="#eef1f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1522" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="hon-sedori-icon.png">
 <style>
-  :root{
-    --paper:#EDE4D2;
-    --paper-deep:#E3D7BE;
-    --card:#FAF5E9;
-    --ink:#2A2117;
-    --ink-soft:#5C5142;
-    --line:#CBBB98;
-    --stamp-red:#A03A2E;
-    --gold:#B8862F;
-    --safe:#3B6650;
-    --safe-bg:#E4EEE7;
-    --danger:#A03A2E;
-    --danger-bg:#F5E1DD;
+  :root {
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --border: #dfe4ea;
+    --text: #1c2740;
+    --sub: #6b7385;
+    --navy: #1c2740;
+    --on-navy: #ffffff;
+    --input: #e9edf2;
+    --tag: #fcd03c;
+    --tag-edge: #e0ae12;
+    --tag-text: #2a2412;
+    --seg: #e6eaef;
+    --seg-on: #ffffff;
+    --plus: #1c9b55;
+    --minus: #d93636;
+    --bar: #1c2740;
+    --bar-sub: #b9c1d1;
+    --bar-plus: #4ade80;
+    --bar-minus: #ff6b6b;
+    --chip: #f3f5f8;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:
-      radial-gradient(ellipse at top left, #F5EEDD 0%, transparent 60%),
-      var(--paper);
-    color:var(--ink);
-    font-family:'Zen Kaku Gothic New', sans-serif;
-    padding-bottom:60px;
-    -webkit-tap-highlight-color: transparent;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1522;
+      --card: #182033;
+      --border: #2a3550;
+      --text: #e8ecf4;
+      --sub: #9aa4b8;
+      --navy: #e8ecf4;
+      --on-navy: #182033;
+      --input: #222c42;
+      --tag: #f2c531;
+      --tag-edge: #b88a06;
+      --tag-text: #241d05;
+      --seg: #222c42;
+      --seg-on: #34415f;
+      --plus: #4ade80;
+      --minus: #ff6b6b;
+      --bar: #060a12;
+      --bar-sub: #9aa4b8;
+      --chip: #202a40;
+    }
   }
-  header{ padding:28px 20px 18px; border-bottom:2px solid var(--line); position:relative; }
-  header::after{
-    content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px;
-    background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    font-feature-settings: "palt";
+    padding: env(safe-area-inset-top) 16px calc(120px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust: 100%;
   }
-  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.18em; color:var(--stamp-red); font-weight:700; }
-  h1{ font-family:'Shippori Mincho', serif; font-size:24px; margin:6px 0 4px; line-height:1.35; }
-  .sub{ font-size:13px; color:var(--ink-soft); line-height:1.6; }
-
-  main{ padding:20px 20px 20px; max-width:480px; margin:0 auto; }
-
-  .card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:18px;
-    box-shadow:0 2px 6px rgba(42,33,23,.06);
+  main { max-width: 520px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; margin: 20px 4px 16px; gap: 12px; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: .02em; }
+  .clear-btn {
+    border: 1px solid var(--border); background: var(--card); color: var(--sub);
+    font: inherit; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    white-space: nowrap;
   }
-  .field{ margin-bottom:18px; }
-  .field:last-child{ margin-bottom:0; }
-  label.field-label{
-    display:block;
-    font-size:12px;
-    font-weight:700;
-    color:var(--ink-soft);
-    letter-spacing:.03em;
-    margin-bottom:8px;
+  .clear-btn:active { opacity: .6; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 20px 18px; margin-bottom: 16px;
   }
-  label.field-label .unit{ font-weight:500; font-size:11px; opacity:.75; margin-left:4px; }
-
-  .yen-input{
-    position:relative;
+  h2 { font-size: 17px; margin: 0 0 6px; }
+  .hint { color: var(--sub); font-size: 13px; line-height: 1.6; margin: 0 0 14px; }
+  .tags { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tag {
+    position: relative; border: 0; border-radius: 14px; background: var(--tag); color: var(--tag-text);
+    box-shadow: 0 4px 0 var(--tag-edge); font: inherit; font-weight: 800; font-size: 21px;
+    padding: 14px 4px 12px; cursor: pointer; font-variant-numeric: tabular-nums;
+    transition: transform .06s, box-shadow .06s;
   }
-  .yen-input::before{
-    content:"¥";
-    position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    color:var(--ink-soft); font-family:'JetBrains Mono', monospace; font-weight:700; font-size:16px;
+  .tag small { font-size: 12px; margin-left: 1px; }
+  .tag::before {
+    content: ""; position: absolute; top: 9px; left: 10px; width: 8px; height: 8px;
+    border-radius: 50%; background: rgba(255,255,255,.85);
   }
-  input[type="number"]{
-    width:100%;
-    font-family:'JetBrains Mono', monospace;
-    font-size:18px;
-    font-weight:700;
-    color:var(--ink);
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:6px;
-    padding:12px 12px 12px 32px;
-    outline:none;
+  .tag:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tag-edge); }
+  .row { display: flex; gap: 10px; margin-top: 14px; }
+  input[type=number] {
+    flex: 1; min-width: 0; font: inherit; font-size: 18px; color: var(--text);
+    background: var(--input); border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px;
+    -moz-appearance: textfield;
   }
-  input[type="number"]:focus{ border-color:var(--gold); }
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button{ opacity:.6; }
-
-  .radio-group{ display:flex; flex-direction:column; gap:8px; }
-  .radio-option{
-    display:flex; align-items:center; justify-content:space-between;
-    border:1px solid var(--line);
-    background:var(--paper);
-    border-radius:6px;
-    padding:10px 14px;
-    cursor:pointer;
-    transition:border-color .15s ease, background .15s ease;
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input:focus { outline: 2px solid var(--tag-edge); outline-offset: 1px; }
+  .add-btn {
+    border: 0; border-radius: 14px; background: var(--navy); color: var(--on-navy);
+    font: inherit; font-weight: 700; font-size: 16px; padding: 0 20px; cursor: pointer;
   }
-  .radio-option:has(input:checked){
-    border-color:var(--gold);
-    background:#F6EBD2;
+  .add-btn:active { opacity: .75; }
+  .list { list-style: none; margin: 16px 0 0; padding: 0; }
+  .list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .list .label { flex: 1; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .list .label b { font-size: 18px; }
+  .list .sum { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; }
+  .stepper { display: flex; align-items: center; gap: 4px; }
+  .stepper button {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--chip);
+    color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; font-family: inherit;
   }
-  .radio-option .opt-name{
-    display:flex; align-items:center; gap:10px;
-    font-size:14px; font-weight:700;
+  .stepper button:active { opacity: .6; }
+  .empty { text-align: center; color: var(--sub); font-size: 15px; padding: 18px 0 12px; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; border-top: 3px solid var(--navy); margin-top: 4px; padding-top: 14px; font-variant-numeric: tabular-nums; }
+  .total .n { font-size: 17px; }
+  .total .y { font-size: 26px; font-weight: 800; }
+  .yen-field { position: relative; display: flex; }
+  .yen-field input { padding-right: 40px; font-size: 22px; font-weight: 700; }
+  .yen-field span { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--sub); font-weight: 700; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--seg); border-radius: 16px; padding: 5px; margin-bottom: 14px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--sub); font: inherit; font-weight: 700; font-size: 16px;
+    padding: 12px 4px; border-radius: 12px; cursor: pointer;
   }
-  .radio-option input[type="radio"]{
-    accent-color:var(--stamp-red);
-    width:16px; height:16px;
+  .seg button[aria-selected=true] { background: var(--seg-on); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .ships { display: grid; gap: 10px; }
+  .ship {
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px; border: 2px solid var(--border);
+    border-radius: 16px; cursor: pointer; background: var(--card);
   }
-  .radio-option .opt-price{
-    font-family:'JetBrains Mono', monospace;
-    font-size:13px;
-    color:var(--ink-soft);
-    font-weight:700;
+  .ship input { position: absolute; opacity: 0; pointer-events: none; }
+  .ship .nm { flex: 1; }
+  .ship .nm b { display: block; font-size: 16px; }
+  .ship .nm small { color: var(--sub); font-size: 13px; }
+  .ship .pr { font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .ship:has(input:checked) { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
+  .ship:has(input:focus-visible) { outline: 2px solid var(--tag-edge); outline-offset: 2px; }
+  dl.bd { margin: 0; }
+  dl.bd div { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  dl.bd div:last-child { border-bottom: 0; }
+  dl.bd dt { color: var(--sub); }
+  dl.bd dd { margin: 0; font-weight: 700; }
+  dl.bd .strong dt { color: var(--text); font-weight: 700; }
+  dl.bd .strong dd { font-size: 18px; }
+  .pos { color: var(--plus); }
+  .neg { color: var(--minus); }
+  .note { color: var(--sub); font-size: 12px; line-height: 1.6; margin: 12px 4px 0; }
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); color: #fff;
+    padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
   }
-
-  .fee-note{
-    margin-top:16px;
-    font-size:12px;
-    color:var(--ink-soft);
-    line-height:1.6;
-  }
-
-  .result{
-    border-radius:10px;
-    padding:22px 20px;
-    text-align:center;
-    border:2px solid var(--line);
-    background:var(--card);
-    transition:background .2s ease, border-color .2s ease, color .2s ease;
-  }
-  .result.is-safe{ background:var(--safe-bg); border-color:var(--safe); }
-  .result.is-danger{ background:var(--danger-bg); border-color:var(--danger); }
-
-  .result-label{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px; letter-spacing:.14em; font-weight:700;
-    color:var(--ink-soft); margin-bottom:6px;
-  }
-  .result-margin{
-    font-family:'Shippori Mincho', serif;
-    font-size:44px; font-weight:700; line-height:1;
-    color:var(--ink);
-  }
-  .result.is-safe .result-margin{ color:var(--safe); }
-  .result.is-danger .result-margin{ color:var(--danger); }
-  .result-verdict{
-    margin-top:8px;
-    font-size:14px; font-weight:700;
-    color:var(--ink-soft);
-  }
-  .result.is-safe .result-verdict{ color:var(--safe); }
-  .result.is-danger .result-verdict{ color:var(--danger); }
-
-  .breakdown{
-    margin-top:16px;
-    border-top:1px dashed var(--line);
-    padding-top:14px;
-    display:grid;
-    grid-template-columns:1fr auto;
-    row-gap:8px;
-    font-size:13px;
-  }
-  .breakdown .k{ color:var(--ink-soft); text-align:left; }
-  .breakdown .v{ font-family:'JetBrains Mono', monospace; font-weight:700; text-align:right; }
-  .breakdown .v.minus{ color:var(--stamp-red); }
-  .breakdown .divider{ grid-column:1 / -1; border-top:1px solid var(--line); margin:2px 0; }
-  .breakdown .total .k, .breakdown .total .v{ font-weight:900; font-size:14px; }
-
-  footer{
-    text-align:center;
-    font-family:'JetBrains Mono', monospace;
-    font-size:10px;
-    color:var(--ink-soft);
-    letter-spacing:.08em;
-    margin-top:10px;
-  }
+  .bar-in { max-width: 520px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .bar .lbl { font-size: 13px; color: var(--bar-sub); }
+  .bar .big { font-size: 40px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .bar .big.pos { color: var(--bar-plus); }
+  .bar .big.neg { color: var(--bar-minus); }
+  .bar .side { text-align: right; font-size: 14px; color: var(--bar-sub); line-height: 1.7; font-variant-numeric: tabular-nums; }
+  .bar .side b { color: #fff; }
 </style>
 </head>
 <body>
-<header>
-  <div class="eyebrow">BOOKOFF SEDORI</div>
-  <h1>利益判定カード</h1>
-  <div class="sub">ブックオフ仕入れ → メルカリ販売の利益率を即チェック。<br>30%未満は赤字表示で仕入れ判断をサポートします。</div>
-</header>
-
 <main>
-  <div class="card">
-    <div class="field">
-      <label class="field-label" for="cost">ブックオフ売価<span class="unit">（仕入れ値）</span></label>
-      <div class="yen-input">
-        <input type="number" id="cost" inputmode="numeric" min="0" placeholder="0" value="330">
-      </div>
+  <header>
+    <h1>本せどり 利益計算</h1>
+    <button type="button" class="clear-btn" id="clear">ぜんぶクリア</button>
+  </header>
+
+  <section class="card">
+    <h2>ブックオフの仕入れ値</h2>
+    <p class="hint">値札をタップした回数＝冊数。同じ値段なら同じボタンを何回でもどうぞ。</p>
+    <div class="tags" id="tags"></div>
+    <form class="row" id="customForm">
+      <input type="number" id="custom" inputmode="numeric" min="1" step="1" placeholder="その他の金額" aria-label="その他の仕入れ値">
+      <button type="submit" class="add-btn">追加</button>
+    </form>
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="empty">まだ追加されていません</div>
+    <div class="total"><span class="n" id="count">0冊</span><span class="y" id="costTotal">0円</span></div>
+  </section>
+
+  <section class="card">
+    <h2>メルカリの販売価格</h2>
+    <p class="hint">セットで出すならセットの値段を入れてください。</p>
+    <label class="yen-field">
+      <input type="number" id="price" inputmode="numeric" min="0" step="1" placeholder="0" aria-label="販売価格">
+      <span>円</span>
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>送料</h2>
+    <p class="hint">専用の箱が必要なものは、箱代も含めて計算します。</p>
+    <div class="seg" role="tablist">
+      <button type="button" role="tab" data-tab="raku" aria-selected="true">らくらく（ヤマト）</button>
+      <button type="button" role="tab" data-tab="yuyu" aria-selected="false">ゆうゆう（郵便）</button>
     </div>
+    <div class="ships" id="ships"></div>
+  </section>
 
-    <div class="field">
-      <label class="field-label" for="sell">メルカリ売値</label>
-      <div class="yen-input">
-        <input type="number" id="sell" inputmode="numeric" min="0" placeholder="0" value="1200">
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">送料<span class="unit">（発送方法を選択）</span></label>
-      <div class="radio-group" id="shipping">
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="180">ゆうパケットポストmini<small style="font-weight:500;opacity:.75;">（専用封筒代込み）</small></span>
-          <span class="opt-price">¥180</span>
-        </label>
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="210" checked>ネコポス</span>
-          <span class="opt-price">¥210</span>
-        </label>
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="220">ゆうパケットポスト<small style="font-weight:500;opacity:.75;">（シール代込み）</small></span>
-          <span class="opt-price">¥220</span>
-        </label>
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="750">ゆうパック60サイズ</span>
-          <span class="opt-price">¥750</span>
-        </label>
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="870">ゆうパック80サイズ</span>
-          <span class="opt-price">¥870</span>
-        </label>
-        <label class="radio-option">
-          <span class="opt-name"><input type="radio" name="ship" value="1070">ゆうパック100サイズ</span>
-          <span class="opt-price">¥1,070</span>
-        </label>
-      </div>
-    </div>
-
-    <div class="fee-note">※ メルカリ販売手数料（10%）を含めて計算しています</div>
-  </div>
-
-  <div class="card result" id="result">
-    <div class="result-label">PROFIT MARGIN</div>
-    <div class="result-margin" id="marginValue">--%</div>
-    <div class="result-verdict" id="verdictText">数値を入力してください</div>
-
-    <div class="breakdown">
-      <div class="k">メルカリ売値</div><div class="v" id="bSell">¥0</div>
-      <div class="k">− 販売手数料</div><div class="v minus" id="bFee">−¥0</div>
-      <div class="k">− 送料</div><div class="v minus" id="bShip">−¥0</div>
-      <div class="k">− ブックオフ仕入れ値</div><div class="v minus" id="bCost">−¥0</div>
-      <div class="divider"></div>
-      <div class="k total">利益</div><div class="v total" id="bProfit">¥0</div>
-    </div>
-  </div>
-
-  <footer>THRESHOLD: MARGIN &lt; 30% = DANGER</footer>
+  <section class="card">
+    <h2>内訳</h2>
+    <dl class="bd">
+      <div><dt>販売価格</dt><dd id="bPrice">0円</dd></div>
+      <div><dt>メルカリ手数料（10%）</dt><dd id="bFee">−0円</dd></div>
+      <div><dt>送料</dt><dd id="bShip">−0円</dd></div>
+      <div><dt>仕入れ合計</dt><dd id="bCost">−0円</dd></div>
+      <div><dt>1冊あたり仕入れ値</dt><dd id="bPer">—</dd></div>
+      <div class="strong"><dt>利益</dt><dd id="bProfit">0円</dd></div>
+      <div><dt>利益率</dt><dd id="bRate">—</dd></div>
+      <div><dt>赤字にならない最低販売価格</dt><dd id="bMin">300円</dd></div>
+    </dl>
+  </section>
+  <p class="note">送料は2026年11月時点のメルカリ公式の料金です。手数料は販売価格の10%（1円未満切り捨て）。メルカリの出品は300円からなので、最低販売価格は300円以上で表示します。</p>
 </main>
 
+<div class="bar" aria-live="polite">
+  <div class="bar-in">
+    <div>
+      <div class="lbl">利益</div>
+      <div class="big" id="barProfit">0円</div>
+    </div>
+    <div class="side">
+      <div><span id="barCount">0冊</span>・仕入れ <b id="barCost">0円</b></div>
+      <div>手取り <b id="barNet">0円</b></div>
+    </div>
+  </div>
+</div>
+
 <script>
-  const costEl = document.getElementById('cost');
-  const sellEl = document.getElementById('sell');
-  const resultEl = document.getElementById('result');
-  const marginValueEl = document.getElementById('marginValue');
-  const verdictTextEl = document.getElementById('verdictText');
+const TAG_PRICES = [132, 242, 390, 440, 550, 770];
+const SHIPPING = {
+  raku: [
+    { id: 'nekopos', name: 'ネコポス', note: 'A4・厚さ3cmまで', price: 210 },
+    { id: 'compact', name: '宅急便コンパクト', note: '450円＋専用箱70円', price: 520 },
+    { id: 'tq60', name: '宅急便 60サイズ', note: '', price: 750 },
+    { id: 'tq80', name: '宅急便 80サイズ', note: '', price: 850 },
+    { id: 'tq100', name: '宅急便 100サイズ', note: '', price: 1050 },
+    { id: 'tq120', name: '宅急便 120サイズ', note: '', price: 1200 },
+  ],
+  yuyu: [
+    { id: 'ypmini', name: 'ゆうパケットポストmini', note: '専用封筒・ポスト投函', price: 160 },
+    { id: 'ypp', name: 'ゆうパケットポスト', note: '215円＋シール5円', price: 220 },
+    { id: 'yppbox', name: 'ゆうパケットポスト（専用箱）', note: '215円＋専用箱65円', price: 280 },
+    { id: 'yp', name: 'ゆうパケット', note: '厚さ3cmまで・A4', price: 230 },
+    { id: 'ypplus', name: 'ゆうパケットプラス', note: '455円＋専用箱65円', price: 520 },
+    { id: 'yk60', name: 'ゆうパック 60サイズ', note: '', price: 770 },
+    { id: 'yk80', name: 'ゆうパック 80サイズ', note: '', price: 870 },
+    { id: 'yk100', name: 'ゆうパック 100サイズ', note: '', price: 1070 },
+  ],
+};
+const MIN_LISTING = 300;
 
-  const bSell = document.getElementById('bSell');
-  const bFee = document.getElementById('bFee');
-  const bShip = document.getElementById('bShip');
-  const bCost = document.getElementById('bCost');
-  const bProfit = document.getElementById('bProfit');
+const state = { items: new Map(), tab: 'raku', shipId: null };
+const $ = id => document.getElementById(id);
+const yen = n => n.toLocaleString('ja-JP') + '円';
+const fee = p => Math.floor(p * 0.1);
 
-  const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+// 値札ボタン
+$('tags').innerHTML = TAG_PRICES.map(p =>
+  `<button type="button" class="tag" data-p="${p}">${p}<small>円</small></button>`).join('');
+$('tags').addEventListener('click', e => {
+  const b = e.target.closest('.tag'); if (b) addItem(+b.dataset.p);
+});
+$('customForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = Math.floor(+$('custom').value);
+  if (v > 0) { addItem(v); $('custom').value = ''; }
+});
 
-  function getShipping(){
-    const checked = document.querySelector('input[name="ship"]:checked');
-    return checked ? Number(checked.value) : 0;
-  }
-  const FEE_RATE = 0.1;
+function addItem(p, d = 1) {
+  const n = (state.items.get(p) || 0) + d;
+  if (n <= 0) state.items.delete(p); else state.items.set(p, n);
+  render();
+}
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('button[data-p]'); if (b) addItem(+b.dataset.p, +b.dataset.d);
+});
 
-  function calculate(){
-    const cost = Number(costEl.value) || 0;
-    const sell = Number(sellEl.value) || 0;
-    const shipping = getShipping();
+// 送料タブ
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  state.tab = b.dataset.tab; state.shipId = null; renderShips(); render();
+}));
+function renderShips() {
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === state.tab));
+  $('ships').innerHTML = SHIPPING[state.tab].map(s => `
+    <label class="ship">
+      <input type="radio" name="ship" value="${s.id}" ${s.id === state.shipId ? 'checked' : ''}>
+      <span class="nm"><b>${s.name}</b>${s.note ? `<small>${s.note}</small>` : ''}</span>
+      <span class="pr">${yen(s.price)}</span>
+    </label>`).join('');
+}
+$('ships').addEventListener('change', e => { state.shipId = e.target.value; render(); });
+$('price').addEventListener('input', render);
 
-    const fee = sell * FEE_RATE;
-    const profit = sell - fee - shipping - cost;
-    const margin = sell > 0 ? (profit / sell) * 100 : 0;
+$('clear').addEventListener('click', () => {
+  state.items.clear(); state.shipId = null; $('price').value = ''; $('custom').value = '';
+  renderShips(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
-    bSell.textContent = yen(sell);
-    bFee.textContent = '−' + yen(fee);
-    bShip.textContent = '−' + yen(shipping);
-    bCost.textContent = '−' + yen(cost);
-    bProfit.textContent = (profit < 0 ? '−' : '') + yen(Math.abs(profit));
+function render() {
+  const entries = [...state.items.entries()].sort((a, b) => a[0] - b[0]);
+  const count = entries.reduce((s, [, n]) => s + n, 0);
+  const cost = entries.reduce((s, [p, n]) => s + p * n, 0);
+  $('list').innerHTML = entries.map(([p, n]) => `
+    <li>
+      <span class="label"><b>${yen(p)}</b> × ${n}冊</span>
+      <span class="stepper">
+        <button type="button" data-p="${p}" data-d="-1" aria-label="${p}円を1冊減らす">−</button>
+        <button type="button" data-p="${p}" data-d="1" aria-label="${p}円を1冊増やす">＋</button>
+      </span>
+      <span class="sum">${yen(p * n)}</span>
+    </li>`).join('');
+  $('empty').hidden = count > 0;
+  $('count').textContent = count + '冊';
+  $('costTotal').textContent = yen(cost);
 
-    if (sell <= 0){
-      resultEl.classList.remove('is-safe', 'is-danger');
-      marginValueEl.textContent = '--%';
-      verdictTextEl.textContent = '数値を入力してください';
-      return;
-    }
+  const price = Math.max(0, Math.floor(+$('price').value || 0));
+  const ship = (SHIPPING[state.tab].find(s => s.id === state.shipId) || { price: 0 }).price;
+  const f = fee(price);
+  const net = price - f - ship;
+  const profit = net - cost;
 
-    marginValueEl.textContent = margin.toFixed(1) + '%';
+  let min = MIN_LISTING;
+  while (min - fee(min) - ship - cost < 0) min++;
 
-    const isDanger = margin < 30;
-    resultEl.classList.toggle('is-safe', !isDanger);
-    resultEl.classList.toggle('is-danger', isDanger);
+  $('bPrice').textContent = yen(price);
+  $('bFee').textContent = '−' + yen(f);
+  $('bShip').textContent = '−' + yen(ship);
+  $('bCost').textContent = '−' + yen(cost);
+  $('bPer').textContent = count ? yen(Math.round(cost / count)) : '—';
+  const cls = profit < 0 ? 'neg' : profit > 0 ? 'pos' : '';
+  $('bProfit').textContent = yen(profit); $('bProfit').className = cls;
+  const rate = price > 0 ? (profit / price * 100) : null;
+  $('bRate').textContent = rate === null ? '—' : rate.toFixed(1) + '%';
+  $('bRate').className = rate === null ? '' : cls;
+  $('bMin').textContent = yen(min);
 
-    if (profit < 0){
-      verdictTextEl.textContent = '赤字です。仕入れを見送りましょう';
-    } else if (isDanger){
-      verdictTextEl.textContent = '利益率30%未満。仕入れ注意';
-    } else {
-      verdictTextEl.textContent = '利益率30%以上。仕入れOK';
-    }
-  }
+  $('barProfit').textContent = yen(profit); $('barProfit').className = 'big ' + cls;
+  $('barCount').textContent = count + '冊';
+  $('barCost').textContent = yen(cost);
+  $('barNet').textContent = yen(net);
+}
 
-  document.addEventListener('input', calculate);
-  document.addEventListener('change', calculate);
-  calculate();
+renderShips();
+render();
 </script>
 </body>
 </html>
