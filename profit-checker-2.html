@@ -59,7 +59,8 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
   /* ダブルタップでの拡大を止める（ピンチ拡大はそのまま使える） */
-  html, button, label, input { touch-action: manipulation; }
+  /* touch-action は子要素に引き継がれないので、全要素に指定する */
+  *, *::before, *::after { touch-action: manipulation; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -164,6 +165,13 @@
   .bar .big { font-size: 40px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
   .bar .big.pos { color: var(--bar-plus); }
   .bar .big.neg { color: var(--bar-minus); }
+  .bar-in > div:first-child { min-width: 0; }
+  .bar .big { font-size: clamp(28px, 8.5vw, 40px); white-space: nowrap; }
+  .bar .side { white-space: nowrap; font-size: 13px; }
+  .bar .main { display: flex; align-items: baseline; gap: 8px; }
+  .bar .rate { font-size: clamp(15px, 4.6vw, 20px); white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--bar-sub); }
+  .bar .rate.pos { color: var(--bar-plus); }
+  .bar .rate.neg { color: var(--bar-minus); }
   .bar .side { text-align: right; font-size: 14px; color: var(--bar-sub); line-height: 1.7; font-variant-numeric: tabular-nums; }
   .bar .side b { color: #fff; }
 </style>
@@ -227,7 +235,10 @@
   <div class="bar-in">
     <div>
       <div class="lbl">利益</div>
-      <div class="big" id="barProfit">0円</div>
+      <div class="main">
+        <span class="big" id="barProfit">0円</span>
+        <span class="rate" id="barRate">—%</span>
+      </div>
     </div>
     <div class="side">
       <div><span id="barCount">0冊</span>・仕入れ <b id="barCost">0円</b></div>
@@ -346,6 +357,8 @@ function render() {
   $('bMin').textContent = yen(min);
 
   $('barProfit').textContent = yen(profit); $('barProfit').className = 'big ' + cls;
+  $('barRate').textContent = rate === null ? '—%' : rate.toFixed(1) + '%';
+  $('barRate').className = 'rate ' + (rate === null ? '' : cls);
   $('barCount').textContent = count + '冊';
   $('barCost').textContent = yen(cost);
   $('barNet').textContent = yen(net);
